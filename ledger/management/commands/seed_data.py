@@ -16,8 +16,30 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         self.stdout.write("Clearing previous seed data...")
+        from risk.models import Attendance, TestScore, RiskFlag, CounsellorTask
+        from reminders.models import Reminder, MessageLog
+        from refunds.models import RefundRequest
+        from payments.models import PaymentLink, GatewayEvent, UnmatchedPayment
+
+        CounsellorTask.objects.all().delete()
+        RiskFlag.objects.all().delete()
+        Attendance.objects.all().delete()
+        TestScore.objects.all().delete()
+        Reminder.objects.all().delete()
+        MessageLog.objects.all().delete()
+        RefundRequest.objects.all().delete()
+        PaymentLink.objects.all().delete()
+        GatewayEvent.objects.all().delete()
+        UnmatchedPayment.objects.all().delete()
+        Receipt.objects.all().delete()
+        PaymentAllocation.objects.all().delete()
+        Payment.objects.all().delete()
+        Discount.objects.all().delete()
+        Instalment.objects.all().delete()
         Student.objects.all().delete()
         Batch.objects.all().delete()
+        StaffProfile.objects.all().delete()
+        Guardian.objects.all().delete()
         Centre.objects.all().delete()
         FeePlan.objects.all().delete()
         User.objects.filter(is_superuser=False).delete()

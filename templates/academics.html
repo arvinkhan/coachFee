@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Academics — {{ student.name }} — CoachFee{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-[#1e3a5f]">Attendance &amp; Scores</h1>
+        <p class="text-gray-500 text-sm mt-1">{{ student.name }} — {{ student.student_id }}</p>
+    </div>
+
+    <!-- Attendance Summary -->
+    <div class="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+        <h2 class="text-lg font-semibold text-[#1e3a5f] mb-4">Attendance Summary</h2>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div class="text-center">
+                <p class="text-2xl font-bold text-[#1e3a5f]">{{ attendance_summary.total }}</p>
+                <p class="text-xs text-gray-500 uppercase">Total Days</p>
+            </div>
+            <div class="text-center">
+                <p class="text-2xl font-bold text-green-600">{{ attendance_summary.present }}</p>
+                <p class="text-xs text-gray-500 uppercase">Present</p>
+            </div>
+            <div class="text-center">
+                <p class="text-2xl font-bold text-red-600">{{ attendance_summary.absent }}</p>
+                <p class="text-xs text-gray-500 uppercase">Absent</p>
+            </div>
+            <div class="text-center">
+                <p class="text-3xl font-bold
+                    {% if attendance_summary.percentage >= 80 %}text-green-600
+                    {% elif attendance_summary.percentage >= 60 %}text-yellow-600
+                    {% else %}text-red-600{% endif %}">
+                    {{ attendance_summary.percentage|floatformat:1 }}%
+                </p>
+                <p class="text-xs text-gray-500 uppercase">Attendance</p>
+            </div>
+        </div>
+
+        <!-- Attendance progress bar -->
+        <div class="w-full bg-gray-200 rounded-full h-3">
+            <div class="h-3 rounded-full
+                {% if attendance_summary.percentage >= 80 %}bg-green-500
+                {% elif attendance_summary.percentage >= 60 %}bg-yellow-500
+                {% else %}bg-red-500{% endif %}"
+                 style="width: {{ attendance_summary.percentage }}%"></div>
+        </div>
+    </div>
+
+    <!-- Recent Attendance -->
+    <div class="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+        <h2 class="text-lg font-semibold text-[#1e3a5f] mb-4">Recent Attendance (Last 30 Days)</h2>
+
+        {% if not recent_attendance %}
+        <p class="text-gray-500 text-sm">No attendance records found.</p>
+        {% else %}
+        <div class="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-2">
+            {% for record in recent_attendance %}
+            <div class="text-center">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-1
+                    {% if record.present %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                    {% if record.present %}
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    {% else %}
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                    {% endif %}
+                </div>
+                <p class="text-xs text-gray-500">{{ record.date|date:"d/m" }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Test Scores -->
+    <div class="bg-white border border-gray-200 rounded-xl p-6">
+        <h2 class="text-lg font-semibold text-[#1e3a5f] mb-4">Test Scores</h2>
+
+        {% if not test_scores %}
+        <p class="text-gray-500 text-sm">No test scores recorded yet.</p>
+        {% else %}
+
+        <!-- Mobile cards -->
+        <div class="sm:hidden space-y-3">
+            {% for test in test_scores %}
+            <div class="border border-gray-100 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="font-medium text-gray-800">{{ test.test_name }}</p>
+                    <span class="text-sm font-semibold
+                        {% if test.percentage >= 80 %}text-green-600
+                        {% elif test.percentage >= 60 %}text-yellow-600
+                        {% else %}text-red-600{% endif %}">
+                        {{ test.percentage|floatformat:1 }}%
+                    </span>
+                </div>
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <span>{{ test.date|date:"d M Y" }}</span>
+                    <span>{{ test.score }}/{{ test.max_score }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Desktop table -->
+        <div class="hidden sm:block overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-200 text-left text-gray-500 text-xs uppercase tracking-wide">
+                        <th class="py-3 pr-4">Test</th>
+                        <th class="py-3 pr-4">Date</th>
+                        <th class="py-3 pr-4 text-right">Score</th>
+                        <th class="py-3 text-right">Percentage</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for test in test_scores %}
+                    <tr>
+                        <td class="py-3 pr-4 font-medium text-gray-800">{{ test.test_name }}</td>
+                        <td class="py-3 pr-4 text-gray-500">{{ test.date|date:"d M Y" }}</td>
+                        <td class="py-3 pr-4 text-right">{{ test.score }}/{{ test.max_score }}</td>
+                        <td class="py-3 text-right font-semibold
+                            {% if test.percentage >= 80 %}text-green-600
+                            {% elif test.percentage >= 60 %}text-yellow-600
+                            {% else %}text-red-600{% endif %}">
+                            {{ test.percentage|floatformat:1 }}%
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

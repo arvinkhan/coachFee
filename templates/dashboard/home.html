@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% block title %}Dues & Collections Dashboard — CoachFee{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Dashboard Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Dues & Collections Dashboard</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Multi-centre consolidated fee ageing, collection rate & batch receivables
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Centre filter -->
+            <form method="GET" class="flex items-center gap-2">
+                <select name="centre" onchange="this.form.submit()" class="text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="">All Centres (Jaipur)</option>
+                    {% for c in centres %}
+                    <option value="{{ c.id }}" {% if selected_centre and selected_centre.id == c.id %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+
+            <a href="{% url 'ledger:export_csv' %}" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 hover:border-slate-400 rounded-lg text-xs font-semibold text-slate-700 shadow-sm transition">
+                📥 Tally CSV Export
+            </a>
+        </div>
+    </div>
+
+    <!-- 4 High-Level Metric Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block">Total Billed</span>
+            <div class="text-2xl font-bold text-slate-900 mt-1">₹{{ summary.total_billed|floatformat:0 }}</div>
+            <span class="text-[11px] text-slate-400 mt-1 block">Across active fee plans</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-sm">
+            <span class="text-xs font-medium text-emerald-700 uppercase tracking-wider block">Total Collected</span>
+            <div class="text-2xl font-bold text-emerald-700 mt-1">₹{{ summary.total_collected|floatformat:0 }}</div>
+            <span class="text-[11px] text-emerald-600 mt-1 block">Verified & receipted</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-red-100 bg-red-50/20 shadow-sm">
+            <span class="text-xs font-medium text-red-700 uppercase tracking-wider block">Total Outstanding</span>
+            <div class="text-2xl font-bold text-red-700 mt-1">₹{{ summary.total_outstanding|floatformat:0 }}</div>
+            <span class="text-[11px] text-red-600 mt-1 block">Receivable balance</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block">Active Enrolments</span>
+            <div class="text-2xl font-bold text-slate-900 mt-1">{{ summary.total_students }}</div>
+            <span class="text-[11px] text-slate-400 mt-1 block">Students across 4 centres</span>
+        </div>
+    </div>
+
+    <!-- Ageing Analysis Buckets (0-30, 31-60, Over 60) -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h2 class="text-base font-bold text-slate-900">Overdue Ageing Analysis</h2>
+                <p class="text-xs text-slate-400 mt-0.5">Categorised by days past instalment due date</p>
+            </div>
+            <span class="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-800 rounded-lg border border-amber-200">
+                Target: Reduce >60d overdue from 12% to 6%
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- 0 - 30 days -->
+            <div class="p-4 bg-amber-50/40 rounded-xl border border-amber-200">
+                <div class="flex items-center justify-between text-xs text-amber-800 font-semibold mb-1">
+                    <span>0 – 30 Days Late</span>
+                    <span class="badge badge-due">Recent</span>
+                </div>
+                <div class="text-xl font-bold text-amber-900">₹{{ ageing.bucket_0_30|floatformat:0 }}</div>
+                <div class="text-[11px] text-amber-700 mt-1">Automated WhatsApp reminders active</div>
+            </div>
+
+            <!-- 31 - 60 days -->
+            <div class="p-4 bg-orange-50/50 rounded-xl border border-orange-200">
+                <div class="flex items-center justify-between text-xs text-orange-800 font-semibold mb-1">
+                    <span>31 – 60 Days Late</span>
+                    <span class="badge badge-partial">Attention</span>
+                </div>
+                <div class="text-xl font-bold text-orange-900">₹{{ ageing.bucket_31_60|floatformat:0 }}</div>
+                <div class="text-[11px] text-orange-700 mt-1">Accounts phone follow-up active</div>
+            </div>
+
+            <!-- Over 60 days -->
+            <div class="p-4 bg-red-50/60 rounded-xl border border-red-200">
+                <div class="flex items-center justify-between text-xs text-red-800 font-semibold mb-1">
+                    <span>Over 60 Days Late</span>
+                    <span class="badge badge-overdue">Critical</span>
+                </div>
+                <div class="text-xl font-bold text-red-800">₹{{ ageing.bucket_over_60|floatformat:0 }}</div>
+                <div class="text-[11px] text-red-600 mt-1">Direct counsellor intervention queue</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Centre-Wise Breakdown Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-base font-bold text-slate-900">Centre-Wise Receivables Breakdown</h2>
+            <a href="{% url 'ledger:student_list' %}" class="text-xs text-brand-700 hover:text-brand-900 font-semibold">
+                View all students →
+            </a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200">
+                    <tr>
+                        <th class="px-5 py-3">Centre Name</th>
+                        <th class="px-5 py-3">Students</th>
+                        <th class="px-5 py-3">Total Billed</th>
+                        <th class="px-5 py-3">Total Collected</th>
+                        <th class="px-5 py-3">Outstanding</th>
+                        <th class="px-5 py-3 text-right">Collection %</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for c in centre_breakdown %}
+                    <tr class="hover:bg-slate-50/50 transition">
+                        <td class="px-5 py-3 font-semibold text-slate-900">
+                            {{ c.centre_name }}
+                        </td>
+                        <td class="px-5 py-3 text-slate-500">{{ c.student_count }}</td>
+                        <td class="px-5 py-3 font-medium">₹{{ c.billed|floatformat:0 }}</td>
+                        <td class="px-5 py-3 text-emerald-700 font-semibold">₹{{ c.collected|floatformat:0 }}</td>
+                        <td class="px-5 py-3 text-red-700 font-semibold">₹{{ c.outstanding|floatformat:0 }}</td>
+                        <td class="px-5 py-3 text-right font-bold text-slate-800">
+                            {% if c.billed > 0 %}
+                                {% widthratio c.collected c.billed 100 %}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-5 py-6 text-center text-slate-400">No centre records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Payments Stream -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-base font-bold text-slate-900">Recent Payment Transactions</h2>
+            <span class="text-xs text-slate-400">Auto-allocated oldest-due-first</span>
+        </div>
+
+        <div class="divide-y divide-slate-100">
+            {% for p in recent_payments %}
+            <div class="p-4 sm:px-5 flex items-center justify-between text-xs hover:bg-slate-50/50 transition">
+                <div>
+                    <div class="font-semibold text-slate-900">
+                        {{ p.student.name }} <span class="text-slate-400 font-normal">({{ p.student.student_id }})</span>
+                    </div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">
+                        Receipt: {{ p.receipt.receipt_number|default:"Pending" }} · Ref: {{ p.gateway_ref|default:"Cash" }}
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <div class="text-sm font-bold text-emerald-700">₹{{ p.amount|floatformat:0 }}</div>
+                    <div class="text-[11px] text-slate-400">{{ p.received_at|date:"d M Y, h:i A" }}</div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-6 text-center text-slate-400 text-xs">No recent transactions recorded.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

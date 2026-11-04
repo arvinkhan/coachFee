@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}GST Payment Receipts — CoachFee{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+            <h1 class="text-xl font-bold text-slate-900">
+                {% if guardian.language == 'hi' %}भुगतान रसीदें (GST Receipts){% else %}Payment Receipts & History{% endif %}
+            </h1>
+            <p class="text-xs text-slate-500 mt-0.5">
+                {% if guardian.language == 'hi' %}सभी भुगतानों की आधिकारिक जीएसटी रसीदें{% else %}Official tax receipts compliant with Indian GST rules{% endif %}
+            </p>
+        </div>
+
+        {% if students|length > 1 %}
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-500">Student:</span>
+            {% for s in students %}
+            <a href="{% url 'ledger:parent_student_receipts' s.student_id %}" class="text-xs px-2.5 py-1 rounded-lg border {% if s.id == student.id %}bg-brand-900 text-white border-brand-900{% else %}bg-white text-slate-700 border-slate-200{% endif %} font-medium">
+                {{ s.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if not payments %}
+    <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 text-sm">
+        No payment records found for this student.
+    </div>
+    {% else %}
+    <div class="space-y-4">
+        {% for p in payments %}
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-mono text-xs font-bold text-brand-800 bg-brand-50 px-2 py-0.5 rounded border border-brand-200">
+                            {{ p.receipt_number }}
+                        </span>
+                        <span class="text-xs text-slate-400">·</span>
+                        <span class="text-xs text-slate-500">{{ p.received_at|date:"d M Y, h:i A" }}</span>
+                    </div>
+                    <div class="text-xs text-slate-500 mt-1">
+                        Mode: <strong>{{ p.mode }}</strong> &nbsp;|&nbsp; Ref: <code class="font-mono text-slate-700">{{ p.gateway_ref }}</code>
+                    </div>
+                </div>
+
+                <div class="text-left sm:text-right">
+                    <span class="text-[10px] text-slate-400 block uppercase">Total Paid</span>
+                    <span class="text-xl font-bold text-emerald-700">₹{{ p.amount|floatformat:2 }}</span>
+                </div>
+            </div>
+
+            <!-- GST Breakdown -->
+            <div class="pt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50/50 p-3 rounded-xl border border-slate-100 mt-3">
+                <div>
+                    <span class="text-slate-400 block">Base Tuition Amount</span>
+                    <span class="font-semibold text-slate-800">₹{{ p.receipt_base|floatformat:2 }}</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block">GST Component (18%)</span>
+                    <span class="font-semibold text-slate-800">₹{{ p.receipt_gst|floatformat:2 }}</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block">Applied To Instalments</span>
+                    <span class="font-semibold text-brand-700">
+                        {% for alloc in p.allocations %}
+                            {{ alloc }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            General Fee Allocation
+                        {% endfor %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

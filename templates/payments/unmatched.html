@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Unmatched Payments Queue — CoachFee{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Unmatched Payments Queue</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Bank transfers, unknown gateway webhooks, or mismatched references quarantined for human review
+            </p>
+        </div>
+        <span class="text-xs px-3 py-1 bg-amber-50 text-amber-800 rounded-lg border border-amber-200 font-medium">
+            Rule: Payments never auto-mark paid unless verified
+        </span>
+    </div>
+
+    <!-- Table of Unmatched Payments -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200">
+                    <tr>
+                        <th class="px-5 py-3">Gateway Ref</th>
+                        <th class="px-5 py-3">Amount</th>
+                        <th class="px-5 py-3">Status</th>
+                        <th class="px-5 py-3">Received At</th>
+                        <th class="px-5 py-3">Resolved Payment</th>
+                        <th class="px-5 py-3 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for item in unmatched_payments %}
+                    <tr class="hover:bg-slate-50/50 transition">
+                        <td class="px-5 py-3 font-mono font-bold text-slate-900">
+                            {{ item.gateway_ref }}
+                        </td>
+                        <td class="px-5 py-3 font-bold text-slate-800">
+                            ₹{{ item.amount|floatformat:0 }}
+                        </td>
+                        <td class="px-5 py-3">
+                            <span class="badge {% if item.status == 'pending' %}badge-due{% elif item.status == 'matched' %}badge-paid{% else %}badge-overdue{% endif %}">
+                                {{ item.status|upper }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-3 text-slate-500">
+                            {{ item.received_at|date:"d M Y, h:i A" }}
+                        </td>
+                        <td class="px-5 py-3 text-slate-500">
+                            {% if item.resolved_payment %}
+                                <a href="{% url 'ledger:student_detail' item.resolved_payment.student.student_id %}" class="text-brand-600 hover:underline">
+                                    {{ item.resolved_payment.student.name }} ({{ item.resolved_payment.student.student_id }})
+                                </a>
+                            {% else %}
+                                <span class="text-slate-400">Unresolved</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-3 text-right">
+                            {% if item.status == 'pending' %}
+                            <form method="POST" action="{% url 'payments:resolve_unmatched' item.id %}" class="inline-flex items-center gap-1.5">
+                                {% csrf_token %}
+                                <input type="text" name="student_id" placeholder="Student ID (e.g. STU-0412)" required
+                                       class="px-2 py-1 text-xs border border-slate-300 rounded font-mono w-32 focus:outline-none focus:ring-1 focus:ring-brand-500">
+                                <button type="submit" class="px-2.5 py-1 bg-brand-700 hover:bg-brand-800 text-white rounded font-semibold text-[11px] transition">
+                                    Match & Allocate
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-slate-400">Resolved</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-5 py-8 text-center text-slate-400">
+                            Queue is clean. No unmatched payments requiring accounts intervention.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}Automated Reminder Messages Log — CoachFee{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Automated Reminders & Message Log</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Simulated WhatsApp/SMS messages dispatched at -3, 0, +1, +7, +15 day intervals (Hindi & English)
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <form method="POST" action="{% url 'reminders:trigger' %}">
+                {% csrf_token %}
+                <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                    ▶ Run Daily Reminder Engine Now
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stop-On-Pay Guarantee Banner -->
+    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start gap-3">
+        <span class="text-emerald-700 text-xl font-bold">🛡️</span>
+        <div class="text-xs text-emerald-900 leading-relaxed">
+            <strong>Stop-On-Pay Guarantee:</strong>
+            The automated reminder engine performs a real-time balance check <em>immediately at the instant of send</em>.
+            If a parent pays or an instalment balance reaches ₹0, the reminder is aborted automatically with zero messages dispatched.
+        </div>
+    </div>
+
+    <!-- Search/Filter -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <form method="GET" class="flex items-center gap-3 text-xs">
+            <input type="text" name="phone" value="{{ phone }}" placeholder="Search phone number (e.g. 98290...)"
+                   class="px-3 py-2 border border-slate-300 rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <button type="submit" class="py-2 px-4 bg-brand-700 hover:bg-brand-800 text-white font-semibold rounded-lg transition">
+                Search
+            </button>
+            {% if phone %}
+            <a href="{% url 'reminders:log' %}" class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition">
+                Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Message Log Stream -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200">
+                    <tr>
+                        <th class="px-5 py-3">Timestamp</th>
+                        <th class="px-5 py-3">Recipient Phone</th>
+                        <th class="px-5 py-3">Channel / Lang</th>
+                        <th class="px-5 py-3">Message Content</th>
+                        <th class="px-5 py-3">Instalment Ref</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for item in page_obj %}
+                    <tr class="hover:bg-slate-50/50 transition">
+                        <td class="px-5 py-3 text-slate-500 font-mono text-[11px] whitespace-nowrap">
+                            {{ item.sent_at|date:"d M Y, h:i A" }}
+                        </td>
+                        <td class="px-5 py-3 font-semibold text-slate-900 font-mono whitespace-nowrap">
+                            +91 {{ item.phone }}
+                        </td>
+                        <td class="px-5 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded text-[11px] {% if item.channel == 'whatsapp' %}bg-emerald-50 text-emerald-800 border border-emerald-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                                {% if item.channel == 'whatsapp' %}💬 WhatsApp{% else %}📱 SMS{% endif %}
+                            </span>
+                            <span class="text-slate-400 font-mono uppercase text-[10px] ml-1">({{ item.language }})</span>
+                        </td>
+                        <td class="px-5 py-3 font-normal text-slate-800 leading-snug">
+                            {{ item.message }}
+                        </td>
+                        <td class="px-5 py-3 text-slate-500 whitespace-nowrap text-[11px]">
+                            {% if item.reminder %}
+                                {{ item.reminder.instalment.student.name }} (Inst #{{ item.reminder.instalment.sequence }})
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-5 py-8 text-center text-slate-400">
+                            No messages logged yet. Click "Run Daily Reminder Engine Now" to trigger scheduled messages.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <div>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+            <div class="flex items-center gap-1">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&phone={{ phone }}" class="px-2.5 py-1 rounded border border-slate-200">Previous</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&phone={{ phone }}" class="px-2.5 py-1 rounded border border-slate-200">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

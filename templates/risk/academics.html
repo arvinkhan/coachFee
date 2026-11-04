@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Academic & Attendance Record — {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2">
+                {% if request.user.guardian_profile %}
+                <a href="{% url 'ledger:parent_dashboard' %}" class="text-xs text-brand-600 hover:underline">← Back to Dues Portal</a>
+                {% else %}
+                <a href="{% url 'ledger:student_detail' student.student_id %}" class="text-xs text-brand-600 hover:underline">← Back to Fee Ledger</a>
+                {% endif %}
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900 mt-1">Academic & Attendance Profile</h1>
+            <p class="text-xs text-slate-500 mt-0.5">
+                {{ student.name }} ({{ student.student_id }}) &nbsp;·&nbsp; Batch: <strong>{{ student.batch.name }}</strong>
+            </p>
+        </div>
+
+        <div class="p-3 bg-white border border-slate-200 rounded-xl shadow-sm text-right">
+            <span class="text-[11px] text-slate-400 block uppercase font-medium">Overall Attendance</span>
+            <div class="text-2xl font-bold {% if attendance_pct >= 80 %}text-emerald-700{% elif attendance_pct >= 60 %}text-amber-600{% else %}text-red-700{% endif %}">
+                {{ attendance_pct }}%
+            </div>
+            <span class="text-[10px] text-slate-400 block">{{ present_days }} of {{ total_days }} classes attended</span>
+        </div>
+    </div>
+
+    <!-- Attendance Stream -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-base font-bold text-slate-900">Recent Attendance Log (Last 20 Days)</h2>
+            <span class="text-xs text-slate-400">Recorded by biometric / class register</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200">
+                    <tr>
+                        <th class="px-5 py-3">Date</th>
+                        <th class="px-5 py-3">Day</th>
+                        <th class="px-5 py-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for rec in attendance_records %}
+                    <tr class="hover:bg-slate-50/50 transition">
+                        <td class="px-5 py-3 font-medium text-slate-900">{{ rec.date|date:"d M Y" }}</td>
+                        <td class="px-5 py-3 text-slate-500">{{ rec.date|date:"l" }}</td>
+                        <td class="px-5 py-3">
+                            {% if rec.present %}
+                            <span class="badge badge-paid">✓ PRESENT</span>
+                            {% else %}
+                            <span class="badge badge-overdue">✕ ABSENT</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="px-5 py-6 text-center text-slate-400">No attendance records logged yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Test Scores History -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-base font-bold text-slate-900">Periodic Assessment Test Scores</h2>
+            <span class="text-xs text-slate-400">JEE / NEET Mock & Weekly Tests</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200">
+                    <tr>
+                        <th class="px-5 py-3">Test Name</th>
+                        <th class="px-5 py-3">Conducted Date</th>
+                        <th class="px-5 py-3">Score Obtained</th>
+                        <th class="px-5 py-3">Maximum Marks</th>
+                        <th class="px-5 py-3 text-right">Percentage %</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for t in test_scores %}
+                    <tr class="hover:bg-slate-50/50 transition">
+                        <td class="px-5 py-3 font-semibold text-slate-900">{{ t.test_name }}</td>
+                        <td class="px-5 py-3 text-slate-500">{{ t.date|date:"d M Y" }}</td>
+                        <td class="px-5 py-3 font-bold text-slate-800">{{ t.score }}</td>
+                        <td class="px-5 py-3 text-slate-500">{{ t.max_score }}</td>
+                        <td class="px-5 py-3 text-right font-bold {% if t.percentage >= 75 %}text-emerald-700{% elif t.percentage >= 50 %}text-amber-600{% else %}text-red-700{% endif %}">
+                            {{ t.percentage }}%
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-5 py-6 text-center text-slate-400">No test scores recorded yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -129,6 +129,10 @@ class AccessControlPermissionsTest(TestCase):
     def test_parent_cannot_access_other_parent_student_ledger(self):
         client = Client()
         client.login(username='parent1', password='pass')
+
+        # Parent 1 accesses dashboard -> OK (200)
+        res_dash = client.get('/parent/')
+        self.assertEqual(res_dash.status_code, 200)
         
         # Parent 1 accesses own child -> OK (200)
         res_own = client.get(f'/students/{self.s1.student_id}/')

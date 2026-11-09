@@ -153,19 +153,33 @@ class Command(BaseCommand):
             sp, _ = StudentProfile.objects.get_or_create(user=u, student=student)
             return sp
 
-        # Helper to record a payment
-        def record_payment(student, instalment, amount_paise, mode='gateway', ref=None):
+        # Helper to record a payment with historical timestamp
+        def record_payment(student, instalment, amount_paise, mode='gateway', ref=None, payment_date=None):
+            from datetime import time, datetime
+            from django.utils import timezone
+            if not payment_date:
+                payment_date = instalment.due_date
             if not ref:
                 ref = f"PAY-{student.student_id}-{instalment.sequence}"
-            p = Payment.objects.create(student=student, amount=amount_paise, mode=mode, gateway_ref=ref)
+
+            p_dt = timezone.make_aware(datetime.combine(payment_date, time(11, 30)))
+            p = Payment.objects.create(
+                student=student,
+                amount=amount_paise,
+                mode=mode,
+                gateway_ref=ref,
+                received_at=p_dt,
+            )
             PaymentAllocation.objects.create(payment=p, instalment=instalment, amount=amount_paise)
             base, gst, total = compute_gst_breakdown(amount_paise, 18)
+            rcp_no = f"RCP-{payment_date.strftime('%Y%m%d')}-{p.id:05d}"
             Receipt.objects.create(
                 payment=p,
-                receipt_number=generate_receipt_number(p.id),
+                receipt_number=rcp_no,
                 base_amount=base,
                 gst_amount=gst,
-                total_amount=total
+                total_amount=total,
+                issued_at=p_dt,
             )
             return p
 

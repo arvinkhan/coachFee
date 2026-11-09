@@ -232,9 +232,9 @@
                         </td>
                         <td class="px-5 py-3 text-slate-600">{{ p.received_at|date:"d M Y, h:i A" }}</td>
                         <td class="px-5 py-3 font-medium">{{ p.get_mode_display }} ({{ p.gateway_ref|default:"Direct" }})</td>
-                        <td class="px-5 py-3">₹{{ p.receipt.base_amount|default:0|floatformat:0 }}</td>
-                        <td class="px-5 py-3">₹{{ p.receipt.gst_amount|default:0|floatformat:0 }}</td>
-                        <td class="px-5 py-3 text-right font-bold text-emerald-700">₹{{ p.amount|floatformat:0 }}</td>
+                        <td class="px-5 py-3">₹{{ p.receipt.base_amount_display|default:0|floatformat:0 }}</td>
+                        <td class="px-5 py-3">₹{{ p.receipt.gst_amount_display|default:0|floatformat:0 }}</td>
+                        <td class="px-5 py-3 text-right font-bold text-emerald-700">₹{{ p.amount_display|floatformat:0 }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

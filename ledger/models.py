@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 class Centre(models.Model):
@@ -117,7 +118,7 @@ class Payment(models.Model):
     amount = models.PositiveBigIntegerField(help_text='Payment amount in paise')
     mode = models.CharField(max_length=20, choices=PAYMENT_MODES)
     gateway_ref = models.CharField(max_length=100, unique=True, null=True, blank=True)
-    received_at = models.DateTimeField(auto_now_add=True)
+    received_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         ordering = ['-received_at']
@@ -147,6 +148,10 @@ class PaymentAllocation(models.Model):
     def __str__(self):
         return f"₹{self.amount / 100:.0f} → Inst #{self.instalment.sequence}"
 
+    @property
+    def amount_display(self):
+        return self.amount / 100
+
 
 class Receipt(models.Model):
     """GST receipt for a payment. All amounts in paise."""
@@ -155,7 +160,19 @@ class Receipt(models.Model):
     base_amount = models.PositiveBigIntegerField()
     gst_amount = models.PositiveBigIntegerField()
     total_amount = models.PositiveBigIntegerField()
-    issued_at = models.DateTimeField(auto_now_add=True)
+    issued_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.receipt_number
+
+    @property
+    def base_amount_display(self):
+        return self.base_amount / 100
+
+    @property
+    def gst_amount_display(self):
+        return self.gst_amount / 100
+
+    @property
+    def total_amount_display(self):
+        return self.total_amount / 100

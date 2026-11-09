@@ -152,13 +152,13 @@
                             <span class="font-medium text-slate-800">{{ p.get_mode_display }}</span>
                             <span class="block text-[11px] font-mono text-slate-400">{{ p.gateway_ref|default:"Manual" }}</span>
                         </td>
-                        <td class="px-5 py-3">₹{{ p.receipt.base_amount|default:0|floatformat:0 }}</td>
-                        <td class="px-5 py-3">₹{{ p.receipt.gst_amount|default:0|floatformat:0 }}</td>
-                        <td class="px-5 py-3 font-bold text-emerald-700">₹{{ p.amount|floatformat:0 }}</td>
+                        <td class="px-5 py-3">₹{{ p.receipt.base_amount_display|default:0|floatformat:0 }}</td>
+                        <td class="px-5 py-3">₹{{ p.receipt.gst_amount_display|default:0|floatformat:0 }}</td>
+                        <td class="px-5 py-3 font-bold text-emerald-700">₹{{ p.amount_display|floatformat:0 }}</td>
                         <td class="px-5 py-3">
                             {% for alloc in p.allocations.all %}
                                 <span class="inline-block bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[11px] mb-0.5">
-                                    Inst #{{ alloc.instalment.sequence }}: ₹{{ alloc.amount|floatformat:0 }}
+                                    Inst #{{ alloc.instalment.sequence }}: ₹{{ alloc.amount_display|floatformat:0 }}
                                 </span>
                             {% empty %}
                                 <span class="text-slate-400">Direct allocation</span>

@@ -102,11 +102,17 @@
                         </td>
                         <td class="px-5 py-3 text-right">
                             {% if inst.balance > 0 %}
-                            <a href="{% url 'payments:pay' inst.id %}" class="inline-flex items-center px-2.5 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold rounded-lg transition">
-                                Pay Link →
-                            </a>
+                            <div class="inline-flex items-center gap-1.5">
+                                <button type="button" onclick="copyInstalmentLink('{{ inst.id }}')" title="Copy payment link to clipboard"
+                                        class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px] transition flex items-center gap-1">
+                                    📋 <span id="copy_btn_{{ inst.id }}">Copy Link</span>
+                                </button>
+                                <a href="{% url 'payments:pay' inst.id %}" target="_blank" class="inline-flex items-center px-2.5 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold rounded-lg transition text-[11px]">
+                                    Open Gateway ↗
+                                </a>
+                            </div>
                             {% else %}
-                            <span class="text-emerald-600 font-semibold">✓ Paid</span>
+                            <span class="text-emerald-600 font-semibold text-xs">✓ Paid</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -170,4 +176,24 @@
     </div>
 
 </div>
+
+<script>
+function copyInstalmentLink(instId) {
+    var url = window.location.origin + "/payments/pay/" + instId + "/";
+    navigator.clipboard.writeText(url).then(function() {
+        var btn = document.getElementById("copy_btn_" + instId);
+        if (btn) {
+            var orig = btn.innerText;
+            btn.innerText = "Copied! ✓";
+            btn.classList.add("text-emerald-700");
+            setTimeout(function() {
+                btn.innerText = orig;
+                btn.classList.remove("text-emerald-700");
+            }, 2000);
+        }
+    }).catch(function() {
+        prompt("Copy payment link:", url);
+    });
+}
+</script>
 {% endblock %}

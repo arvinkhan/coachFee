@@ -16,9 +16,86 @@ def home(request):
     """Route user according to their role."""
     if hasattr(request.user, 'guardian_profile'):
         return redirect('ledger:parent_dashboard')
+    elif hasattr(request.user, 'student_profile'):
+        return redirect('ledger:student_portal')
     elif hasattr(request.user, 'staff_profile') or request.user.is_staff:
         return redirect('ledger:dashboard')
     return redirect('accounts:login')
+
+
+@login_required
+def student_portal(request):
+    """
+    Dedicated Student Dashboard:
+    - Academic profile: attendance percentage, recent log, and test scores
+    - Fee schedule: Total course fee, paid amount, balance, upcoming instalments
+    - Direct access to GST receipts & payment links
+    """
+    if not hasattr(request.user, 'student_profile'):
+        if hasattr(request.user, 'guardian_profile'):
+            return redirect('ledger:parent_dashboard')
+        return redirect('ledger:dashboard')
+
+    student = request.user.student_profile.student
+    
+    # 1. Academics: Attendance & Test Scores
+    from risk.models import Attendance, TestScore
+    attendance_records = Attendance.objects.filter(student=student).order_by('-date')
+    total_days = attendance_records.count()
+    present_days = attendance_records.filter(present=True).count()
+    attendance_pct = round((present_days / total_days * 100), 1) if total_days > 0 else 0
+
+    test_scores = TestScore.objects.filter(student=student).order_by('-date')
+    enriched_scores = []
+    for t in test_scores:
+        pct = round((t.score / t.max_score * 100), 1) if t.max_score > 0 else 0
+        enriched_scores.append({
+            'test_name': t.test_name,
+            'date': t.date,
+            'score': t.score,
+            'max_score': t.max_score,
+            'percentage': pct,
+        })
+
+    # 2. Fee Schedule
+    instalments = list(student.instalments.all().order_by('due_date', 'sequence'))
+    inst_data = []
+    for inst in instalments:
+        alloc_sum = PaymentAllocation.objects.filter(instalment=inst).aggregate(t=Sum('amount'))['t'] or 0
+        status, balance, days_overdue = compute_instalment_status(inst.amount, alloc_sum, inst.due_date)
+        inst_data.append({
+            'id': inst.id,
+            'sequence': inst.sequence,
+            'due_date': inst.due_date,
+            'amount': inst.amount / 100,
+            'paid': alloc_sum / 100,
+            'balance': balance / 100,
+            'status': status,
+            'days_overdue': days_overdue,
+        })
+
+    total_fee = student.fee_plan.total_amount
+    total_paid = student.payments.aggregate(t=Sum('amount'))['t'] or 0
+    total_disc = student.discounts.aggregate(t=Sum('amount'))['t'] or 0
+    total_balance = max(total_fee - total_paid - total_disc, 0)
+
+    # 3. Receipts
+    payments = student.payments.select_related('receipt').prefetch_related('allocations__instalment').order_by('-received_at')
+
+    return render(request, 'student/dashboard.html', {
+        'student': student,
+        'attendance_records': attendance_records[:15],
+        'total_days': total_days,
+        'present_days': present_days,
+        'attendance_pct': attendance_pct,
+        'test_scores': enriched_scores,
+        'instalments': inst_data,
+        'total_fee': total_fee / 100,
+        'total_paid': total_paid / 100,
+        'total_discount': total_disc / 100,
+        'total_balance': total_balance / 100,
+        'payments': payments,
+    })
 
 
 @login_required
@@ -141,10 +218,12 @@ def staff_dashboard(request):
 
     # Filter query
     centre_id = request.GET.get('centre')
-    if centre_id and (not assigned_centre or str(assigned_centre.id) == str(centre_id)):
+    if centre_id:
         selected_centre = Centre.objects.filter(id=centre_id).first()
+    elif staff_profile and not staff_profile.is_admin and staff_profile.centre:
+        selected_centre = staff_profile.centre
     else:
-        selected_centre = assigned_centre
+        selected_centre = None
 
     student_qs = Student.objects.filter(is_active=True).select_related('batch__centre', 'fee_plan')
     if selected_centre:
@@ -228,18 +307,19 @@ def student_list(request):
     staff_profile = getattr(request.user, 'staff_profile', None)
     qs = Student.objects.select_related('batch__centre', 'fee_plan', 'guardian').all()
 
-    if staff_profile and not staff_profile.is_admin and staff_profile.centre:
+    # Centre filter
+    centre_filter = request.GET.get('centre', '')
+    if centre_filter:
+        if centre_filter != 'all':
+            qs = qs.filter(batch__centre_id=centre_filter)
+    elif staff_profile and not staff_profile.is_admin and staff_profile.centre:
         qs = qs.filter(batch__centre=staff_profile.centre)
+        centre_filter = str(staff_profile.centre.id)
 
     # Search
     search = request.GET.get('search', '').strip()
     if search:
         qs = qs.filter(Q(name__icontains=search) | Q(student_id__icontains=search) | Q(guardian__phone__icontains=search))
-
-    # Centre filter
-    centre_filter = request.GET.get('centre', '')
-    if centre_filter:
-        qs = qs.filter(batch__centre_id=centre_filter)
 
     # Batch filter
     batch_filter = request.GET.get('batch', '')

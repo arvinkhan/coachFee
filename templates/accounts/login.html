@@ -9,8 +9,22 @@
     </div>
 
     <div class="space-y-4">
+        <!-- Student Card -->
+        <a href="{% url 'accounts:student_login' %}" class="block p-5 bg-white rounded-xl border-2 border-indigo-100 hover:border-indigo-500 hover:shadow-md transition group">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl group-hover:scale-105 transition">
+                    🎓
+                </div>
+                <div class="flex-1">
+                    <h2 class="font-bold text-slate-800 text-base group-hover:text-indigo-700">Student Portal (विद्यार्थी पोर्टल)</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Sign in with Student ID to check attendance, marks & fee schedule</p>
+                </div>
+                <div class="text-slate-400 group-hover:text-indigo-600 text-lg">→</div>
+            </div>
+        </a>
+
         <!-- Parent Card -->
-        <a href="{% url 'accounts:parent_login' %}" class="block p-5 bg-white rounded-xl border-2 border-brand-100 hover:border-brand-500 hover:shadow-md transition group">
+        <a href="{% url 'accounts:parent_login' %}" class="block p-5 bg-white rounded-xl border border-slate-200 hover:border-brand-500 hover:shadow-md transition group">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center text-xl group-hover:scale-105 transition">
                     📱
@@ -38,8 +52,11 @@
         </a>
     </div>
 
-    <div class="mt-8 text-center text-xs text-slate-400">
-        Demo seed users available. Try sample parent phone: <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-700">9829012345</code> or staff <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-700">staff / staff123</code>.
+    <div class="mt-8 text-center text-xs text-slate-400 leading-relaxed">
+        <strong>Demo credentials available:</strong><br>
+        Student: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">STU-0412 / student123</code><br>
+        Parent OTP phone: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">9829012345</code><br>
+        Staff: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">staff / staff123</code>
     </div>
 </div>
 {% endblock %}

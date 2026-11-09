@@ -25,12 +25,13 @@ Under the previous legacy workflow:
 ## 2. Architecture & Technology Rationale
 
 ```
-Parent Mobile Browser (Low-End Devices) ──► Django 5 Server-Rendered + HTMX ◄── Accounts Executive Browser
+Parent / Student Mobile Browser ──► Django 5 Server-Rendered + HTMX ◄── Accounts Executive Browser
                                                    │
                 ┌──────────────────────────────────┼─────────────────────────────────┐
                 │                                  │                                 │
            accounts app                       ledger app                        payments app
-       (Guardian, OTP, Audit)             (Centres, FeePlans,               (PaymentLinks, Webhooks,
+       (Guardian, StudentProfile,        (Centres, FeePlans,               (PaymentLinks, Webhooks,
+        OTP, StaffProfile, Audit)         Students, Instalments)             Unmatched Queue)
                 │                         Students, Instalments)             Unmatched Queue)
                 │                                  │                                 │
                 ▼                                  ▼                                 ▼
@@ -160,7 +161,7 @@ The risk engine evaluates three transparent objective indicators:
 
 ## 8. Verification & Test Coverage
 
-The automated test suite (`python manage.py test`) covers 23 test cases:
+The automated test suite (`python manage.py test`) covers 28 exhaustive test cases across all subsystems:
 1. `test_gst_breakdown_inclusive`: Base tuition and 18% GST calculation.
 2. `test_instalment_status_and_overdue`: Accurate derivation of status, days overdue, and balances.
 3. `test_partial_payment_allocation_oldest_first`: Priority allocation to earliest due dates.
@@ -184,13 +185,24 @@ The automated test suite (`python manage.py test`) covers 23 test cases:
 21. `test_insufficient_data_handles_gracefully`: Safe fallback for students without historical data.
 22. `test_high_risk_scoring_and_task_generation`: Multi-factor composite risk scoring.
 23. `test_false_positive_suppression`: 30-day repeat suppression for counsellor-dismissed flags.
+24. `test_student_login_and_portal_access`: Student-specific portal access and credential isolation.
+25. `test_bulk_attendance_upload_csv`: Batch-level attendance CSV parsing, validation, and update.
+26. `test_bulk_test_scores_upload_csv`: Batch-level test scores CSV parsing with score bounds validation.
+27. `test_sample_csv_download`: Dynamic pre-populated CSV template generation for enrolled students.
+28. `test_parent_forbidden_from_bulk_upload`: RBAC security ensuring non-staff users receive 403 Forbidden.
 
 ---
 
 ## 9. Scoping Choices & Future Roadmap
 
+### Features Completed in Scope
+- **50-Student Database Scale:** Complete procedural seed generating 50 students across all 4 Jaipur centres with realistic fee plans, multi-year instalments, payments, attendance history, and test records.
+- **Payment Link per Instalment & Test-Mode Gateway:** Unique shareable URL per instalment, copyable clipboard pill, and interactive simulator (UPI/QR, Cards, NetBanking).
+- **Bulk CSV Upload of Attendance & Test Scores:** Batch-level CSV upload with automatic pre-filled sample templates and error reporting.
+- **Parent Portal OTP via Browser Alert:** Demonstrates seamless OTP authentication with automatic browser `alert(...)` popups.
+- **Student Dedicated Portal:** Role-based access for students (`stu_<id>` / `student123`) to view attendance, marks, and fee schedules.
+
 ### Features Purposely Deferred
-- **Bulk CSV Upload of Attendance/Scores:** Deferred as permitted by the brief; student academics can be seeded directly or updated via Django admin/API.
 - **Complex LMS / Video Platform:** Explicitly out of scope per brief.
 - **External SMS/WhatsApp Gateway API Keys:** Mock logging implemented to avoid external provider billing and rate limit dependencies during evaluation.
 

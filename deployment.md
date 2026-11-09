@@ -50,12 +50,12 @@ CoachFee is an enterprise-grade fee management and dues collection portal built 
    python manage.py migrate
    ```
 
-6. **Seed realistic sample data (includes 4 centres & required sample students):**
+6. **Seed realistic sample data (includes 50 students across all 4 centres):**
    ```bash
    python manage.py seed_data
    ```
 
-7. **Execute automated test suite:**
+7. **Execute automated test suite (28 test cases):**
    ```bash
    python manage.py test
    ```
@@ -74,15 +74,25 @@ CoachFee is an enterprise-grade fee management and dues collection portal built 
 - **URL:** `http://127.0.0.1:8000/auth/staff-login/`
 - **Username:** `staff`
 - **Password:** `staff123`
-- *Access:* Consolidated dues dashboard, ageing buckets (0–30d, 31–60d, >60d), multi-centre breakdown, student fee ledgers, pro-rata refund calculator, counsellor risk tasks, Tally CSV export, unmatched payments queue.
+- *Single-Centre Scoped Executive:* Username `exec_gpl` | Password `staff123` (restricted to Gopalpura)
+- *Access:* Consolidated dues dashboard, ageing buckets (0–30d, 31–60d, >60d), multi-centre breakdown across 50 students, student fee ledgers with individual payment links, pro-rata refund calculator, counsellor risk tasks, Tally CSV export, unmatched payments queue, and **Bulk Upload** of batch attendance and test scores via CSV.
 
-### B. Parent Portal OTP Login (5-Second View)
+### B. Student Portal Login
+- **URL:** `http://127.0.0.1:8000/auth/student-login/`
+- **Sample Student 1 (Aarav Meena):** Student ID `STU-0412` | Password: `student123`
+- **Sample Student 2 (Ishita Sharma):** Student ID `STU-0587` | Password: `student123`
+- **Sample Student 3 (Mohit Gurjar):** Student ID `STU-0219` | Password: `student123`
+- **All 50 Students:** Any student ID `STU-xxxx` with password `student123`
+- *Access:* Individual academic profile, class attendance logs, periodic assessment marks, and fee schedule overview with instant payment links.
+
+### C. Parent Portal OTP Login (5-Second View)
 - **URL:** `http://127.0.0.1:8000/auth/parent-login/`
 - **Sample Parent 1 (Aarav Meena):** `9829012345` (Hindi default)
 - **Sample Parent 2 (Ishita Sharma):** `9829023456` (English default)
 - **Sample Parent 3 (Mohit Gurjar):** `9829034567` (NEET batch)
-- **OTP Verification:** In Demo Mode, the 6-digit OTP code is generated and displayed on-screen in a banner upon requesting. Simply type the code and submit.
+- **OTP Delivery:** In Demo Mode, the 6-digit OTP code is delivered automatically via an interactive browser `alert(...)` dialog popup upon entering the phone number (e.g. `[CoachFee OTP Alert] Your verification code is: 123456`). Simply enter the code and submit.
 - **Language Switch:** Click the language button at the top right to instantly toggle between English and Hindi.
+- **Payment Link per Instalment:** Each unpaid instalment features a test-mode payment link with copyable link pill and gateway simulation controls.
 
 ---
 

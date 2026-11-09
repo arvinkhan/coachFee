@@ -72,6 +72,25 @@ class StaffProfile(models.Model):
         return self.role in ('counsellor', 'admin')
 
 
+class StudentProfile(models.Model):
+    """Student profile linked to a Django user for student portal access."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='student_profile',
+    )
+    student = models.OneToOneField(
+        'ledger.Student',
+        on_delete=models.CASCADE,
+        related_name='student_profile',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student.student_id} — {self.student.name}"
+
+
 class OTPLog(models.Model):
     """Tracks OTP generation and verification for rate-limiting and audit."""
 

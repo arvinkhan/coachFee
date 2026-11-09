@@ -80,12 +80,17 @@
                         <a href="{% url 'ledger:parent_receipts' %}" class="px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700">
                             {% if request.user.guardian_profile.language == 'hi' %}रसीदें (Receipts){% else %}Receipts{% endif %}
                         </a>
+                    {% elif request.user.student_profile %}
+                        <a href="{% url 'ledger:student_portal' %}" class="px-3 py-1.5 rounded-md bg-indigo-50 text-indigo-700 font-semibold">
+                            🎓 Student Dashboard
+                        </a>
                     {% else %}
                         <a href="{% url 'ledger:dashboard' %}" class="px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700">Dues Dashboard</a>
                         <a href="{% url 'ledger:student_list' %}" class="px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700">Students</a>
                         <a href="{% url 'refunds:list' %}" class="px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700">Refunds</a>
                         <a href="{% url 'reminders:log' %}" class="px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700">Reminders</a>
                         <a href="{% url 'risk:tasks' %}" class="px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700">Risk Tasks</a>
+                        <a href="{% url 'risk:bulk_upload' %}" class="px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700">Bulk Upload</a>
                         <a href="{% url 'payments:unmatched' %}" class="px-3 py-1.5 rounded-md hover:bg-slate-100 text-slate-700">Unmatched Queue</a>
                     {% endif %}
                 </nav>
@@ -99,6 +104,9 @@
                         <div class="text-xs font-semibold text-slate-800">
                             {% if request.user.guardian_profile %}
                                 {{ request.user.guardian_profile.user.first_name|default:"Parent" }} ({{ request.user.guardian_profile.phone }})
+                            {% elif request.user.student_profile %}
+                                {{ request.user.student_profile.student.name }}
+                                <span class="text-indigo-600 font-mono font-bold">({{ request.user.student_profile.student.student_id }})</span>
                             {% else %}
                                 {{ request.user.username }}
                                 <span class="text-slate-400 font-normal">({{ request.user.staff_profile.get_role_display|default:"Staff" }})</span>
@@ -134,7 +142,7 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Mobile Bottom Navigation (for Parents on low-end mobile devices) -->
+    <!-- Mobile Bottom Navigation (for Parents and Students on mobile devices) -->
     {% if request.user.is_authenticated and request.user.guardian_profile %}
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 flex items-center justify-around h-14 px-2 shadow-lg">
         <a href="{% url 'ledger:parent_dashboard' %}" class="flex flex-col items-center justify-center flex-1 text-xs text-brand-700 font-medium py-1">
@@ -148,6 +156,13 @@
         <a href="{% url 'accounts:toggle_language' %}" class="flex flex-col items-center justify-center flex-1 text-xs text-amber-600 font-medium py-1">
             <span class="text-base mb-0.5">🌐</span>
             <span>{% if request.user.guardian_profile.language == 'hi' %}English{% else %}हिंदी{% endif %}</span>
+        </a>
+    </nav>
+    {% elif request.user.is_authenticated and request.user.student_profile %}
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 flex items-center justify-around h-14 px-2 shadow-lg">
+        <a href="{% url 'ledger:student_portal' %}" class="flex flex-col items-center justify-center flex-1 text-xs text-indigo-700 font-semibold py-1">
+            <span class="text-base mb-0.5">🎓</span>
+            <span>My Academics & Dues</span>
         </a>
     </nav>
     {% endif %}

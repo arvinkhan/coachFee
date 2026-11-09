@@ -5,6 +5,7 @@ app_name = 'ledger'
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('student/', views.student_portal, name='student_portal'),
     path('parent/', views.parent_dashboard, name='parent_dashboard'),
     path('parent/receipts/', views.parent_receipts, name='parent_receipts'),
     path('parent/receipts/<str:student_id>/', views.parent_receipts, name='parent_student_receipts'),

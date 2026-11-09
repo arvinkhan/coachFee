@@ -19,13 +19,13 @@
         {% endif %}
 
         {% if demo_otp %}
-        <div class="mb-5 p-3.5 bg-blue-50 border border-blue-200 text-blue-900 text-xs rounded-lg flex items-center justify-between">
-            <div>
-                <span class="font-semibold">Demo OTP:</span>
-                <span class="text-base font-mono font-bold tracking-widest text-brand-700 ml-1">{{ demo_otp }}</span>
-            </div>
-            <span class="text-slate-400 text-[11px]">(Valid 5 mins)</span>
-        </div>
+        <script>
+            window.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    alert("📲 CoachFee OTP Verification\n\nYour 6-digit login code for +91 {{ phone }} is:\n\n👉  {{ demo_otp }}  👈\n\n(Valid for 5 minutes)");
+                }, 150);
+            });
+        </script>
         {% endif %}
 
         {% if step == 'verify' %}

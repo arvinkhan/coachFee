@@ -89,6 +89,10 @@ class Instalment(models.Model):
     def __str__(self):
         return f"{self.student.student_id} — Inst #{self.sequence}"
 
+    @property
+    def amount_display(self):
+        return self.amount / 100
+
 
 class Discount(models.Model):
     """Discount applied to a student's total fee. Amount in paise."""
@@ -120,6 +124,10 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"₹{self.amount / 100:.0f} from {self.student.student_id}"
+
+    @property
+    def amount_display(self):
+        return self.amount / 100
 
 
 class PaymentAllocation(models.Model):

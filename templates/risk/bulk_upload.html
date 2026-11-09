@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block title %}Bulk Upload Attendance & Test Scores — CoachFee{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Bulk Upload Academics</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Batch-level bulk import for daily attendance and periodic assessment test marks via CSV
+            </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'risk:tasks' %}" class="px-3 py-2 bg-white border border-slate-300 hover:border-slate-400 rounded-lg text-xs font-semibold text-slate-700 shadow-sm transition">
+                ← Risk Tasks Queue
+            </a>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="flex items-center gap-2 border-b border-slate-200 text-xs">
+        <a href="?tab=attendance" class="px-4 py-2.5 font-bold border-b-2 transition flex items-center gap-2 {% if active_tab == 'attendance' %}border-brand-700 text-brand-800 bg-white rounded-t-lg{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">
+            <span>📅 Attendance Bulk Upload</span>
+        </a>
+        <a href="?tab=test_scores" class="px-4 py-2.5 font-bold border-b-2 transition flex items-center gap-2 {% if active_tab == 'test_scores' %}border-brand-700 text-brand-800 bg-white rounded-t-lg{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}">
+            <span>📝 Test Scores Bulk Upload</span>
+        </a>
+    </div>
+
+    {% if active_tab == 'attendance' %}
+    <!-- ATTENDANCE BULK UPLOAD FORM -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+        <div>
+            <h2 class="text-base font-bold text-slate-900">Upload Daily Attendance by Batch</h2>
+            <p class="text-xs text-slate-500 mt-1">Upload attendance CSV file for an entire batch. Supports Present/Absent, P/A, or 1/0 status.</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+            <input type="hidden" name="upload_type" value="attendance">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Target Batch</label>
+                    <select name="batch_id" id="att_batch_select" required
+                            class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                        <option value="">-- Select Coaching Batch --</option>
+                        {% for b in batches %}
+                        <option value="{{ b.id }}">{{ b.name }} ({{ b.centre.name }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Attendance Date</label>
+                    <input type="date" name="date" value="{{ today }}" required
+                           class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+            </div>
+
+            <!-- CSV Upload Dropzone -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Select Attendance CSV File</label>
+                <input type="file" name="csv_file" accept=".csv" required
+                       class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 border border-slate-300 rounded-lg p-2">
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
+                <button type="button" onclick="downloadAttendanceSample()"
+                        class="text-xs font-semibold text-brand-700 hover:text-brand-900 flex items-center gap-1.5 py-2">
+                    📥 Download Pre-Filled CSV Template for Selected Batch
+                </button>
+
+                <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs rounded-xl shadow-sm transition">
+                    ✓ Upload & Process Attendance
+                </button>
+            </div>
+        </form>
+
+        <!-- Format Guide -->
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-600">
+            <span class="font-bold text-slate-800 block mb-1">CSV Column Structure:</span>
+            <code class="font-mono text-[11px] bg-white px-2 py-1 rounded border border-slate-200 block text-slate-800">
+                student_id,status<br>
+                STU-0412,Present<br>
+                STU-0587,Absent
+            </code>
+            <span class="text-[11px] text-slate-400 block mt-1">Accepted status values: <code>Present</code>, <code>Absent</code>, <code>P</code>, <code>A</code>, <code>1</code>, <code>0</code>.</span>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- TEST SCORES BULK UPLOAD FORM -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+        <div>
+            <h2 class="text-base font-bold text-slate-900">Upload Periodic Assessment Scores by Batch</h2>
+            <p class="text-xs text-slate-500 mt-1">Upload test scores CSV for JEE/NEET weekly or cumulative mock tests.</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+            <input type="hidden" name="upload_type" value="test_scores">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Target Batch</label>
+                    <select name="batch_id" id="test_batch_select" required
+                            class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                        <option value="">-- Select Coaching Batch --</option>
+                        {% for b in batches %}
+                        <option value="{{ b.id }}">{{ b.name }} ({{ b.centre.name }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Test Name / Title</label>
+                    <input type="text" name="test_name" placeholder="e.g. JEE Mock Test #3 / Physics Weekly" required
+                           class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Test Date</label>
+                    <input type="date" name="test_date" value="{{ today }}" required
+                           class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Maximum Marks (Total)</label>
+                    <input type="number" name="max_score" value="300" min="1" max="1000" required
+                           class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+            </div>
+
+            <!-- CSV Upload Dropzone -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Select Test Scores CSV File</label>
+                <input type="file" name="csv_file" accept=".csv" required
+                       class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 border border-slate-300 rounded-lg p-2">
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
+                <button type="button" onclick="downloadTestScoresSample()"
+                        class="text-xs font-semibold text-brand-700 hover:text-brand-900 flex items-center gap-1.5 py-2">
+                    📥 Download Pre-Filled CSV Template for Selected Batch
+                </button>
+
+                <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs rounded-xl shadow-sm transition">
+                    ✓ Upload & Record Scores
+                </button>
+            </div>
+        </form>
+
+        <!-- Format Guide -->
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-600">
+            <span class="font-bold text-slate-800 block mb-1">CSV Column Structure:</span>
+            <code class="font-mono text-[11px] bg-white px-2 py-1 rounded border border-slate-200 block text-slate-800">
+                student_id,score<br>
+                STU-0412,275<br>
+                STU-0587,190
+            </code>
+            <span class="text-[11px] text-slate-400 block mt-1">Scores must be non-negative integers not exceeding Maximum Marks.</span>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+function downloadAttendanceSample() {
+    var select = document.getElementById('att_batch_select');
+    if (!select.value) {
+        alert("Please select a coaching batch first.");
+        return;
+    }
+    window.location.href = "/risk/download-sample/attendance/" + select.value + "/";
+}
+
+function downloadTestScoresSample() {
+    var select = document.getElementById('test_batch_select');
+    if (!select.value) {
+        alert("Please select a coaching batch first.");
+        return;
+    }
+    window.location.href = "/risk/download-sample/test_scores/" + select.value + "/";
+}
+</script>
+{% endblock %}

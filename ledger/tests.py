@@ -153,3 +153,25 @@ class AccessControlPermissionsTest(TestCase):
         # Staff at Centre 1 tries to view student at Centre 2 -> 403 Forbidden
         res_c2 = client.get(f'/students/{self.s2.student_id}/')
         self.assertEqual(res_c2.status_code, 403)
+
+    def test_student_can_login_and_access_student_portal(self):
+        # Create student profile
+        from accounts.models import StudentProfile
+        u_stu = User.objects.create_user(username='stu_stu_001', password='student123')
+        StudentProfile.objects.create(user=u_stu, student=self.s1)
+
+        client = Client()
+        # Test student login POST with Student ID and password
+        login_res = client.post('/auth/student-login/', {
+            'student_id': self.s1.student_id,
+            'password': 'student123'
+        }, follow=True)
+        self.assertEqual(login_res.status_code, 200)
+        self.assertContains(login_res, "Student ID:")
+        self.assertContains(login_res, self.s1.name)
+
+        # Direct access to student portal
+        portal_res = client.get('/student/')
+        self.assertEqual(portal_res.status_code, 200)
+        self.assertContains(portal_res, "Periodic Assessment Test Scores")
+        self.assertContains(portal_res, "Fee Schedule & Instalments")

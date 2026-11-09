@@ -9,6 +9,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Sum
 from django.utils import timezone
 
 from accounts.models import AuditLog
@@ -70,7 +71,7 @@ def simulate_payment(payment_link_token, success=True):
     # Compute balance for this instalment
     allocated = PaymentAllocation.objects.filter(
         instalment=link.instalment
-    ).aggregate(total=models.Sum('amount'))['total'] or 0
+    ).aggregate(total=Sum('amount'))['total'] or 0
     balance = link.instalment.amount - allocated
 
     if balance <= 0:
@@ -86,10 +87,6 @@ def simulate_payment(payment_link_token, success=True):
         return gateway_ref, signature, balance, False
 
     return gateway_ref, signature, balance, True
-
-
-# Need models import for Sum
-from django.db import models as db_models
 
 
 def process_webhook(gateway_ref, amount_paise, signature, payment_link_token, actor=None):
@@ -151,7 +148,7 @@ def process_webhook(gateway_ref, amount_paise, signature, payment_link_token, ac
     student = link.instalment.student
     allocated = PaymentAllocation.objects.filter(
         instalment=link.instalment
-    ).aggregate(total=db_models.Sum('amount'))['total'] or 0
+    ).aggregate(total=Sum('amount'))['total'] or 0
     expected_balance = link.instalment.amount - allocated
 
     if amount_paise > expected_balance and expected_balance > 0:
@@ -185,7 +182,7 @@ def process_webhook(gateway_ref, amount_paise, signature, payment_link_token, ac
         for inst in all_instalments:
             alloc_sum = PaymentAllocation.objects.filter(
                 instalment=inst
-            ).aggregate(total=db_models.Sum('amount'))['total'] or 0
+            ).aggregate(total=Sum('amount'))['total'] or 0
             balance = inst.amount - alloc_sum
             if balance > 0:
                 inst_balances.append((inst.id, balance))

@@ -124,7 +124,7 @@ class Payment(models.Model):
         ordering = ['-received_at']
 
     def __str__(self):
-        return f"₹{self.amount / 100:.0f} from {self.student.student_id}"
+        return f"Rs. {self.amount / 100:.0f} from {self.student.student_id}"
 
     @property
     def amount_display(self):
@@ -146,7 +146,7 @@ class PaymentAllocation(models.Model):
         ]
 
     def __str__(self):
-        return f"₹{self.amount / 100:.0f} → Inst #{self.instalment.sequence}"
+        return f"Rs. {self.amount / 100:.0f} -> Inst #{self.instalment.sequence}"
 
     @property
     def amount_display(self):

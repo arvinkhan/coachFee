@@ -119,6 +119,9 @@ def payment_success(request, payment_id):
     payment = get_object_or_404(Payment.objects.select_related('student', 'receipt'), id=payment_id)
     receipt = getattr(payment, 'receipt', None)
 
+    is_parent = request.user.is_authenticated and hasattr(request.user, 'guardian_profile')
+    is_student = request.user.is_authenticated and hasattr(request.user, 'student_profile')
+
     return render(request, 'payments/success.html', {
         'payment': payment,
         'student': payment.student,
@@ -126,6 +129,8 @@ def payment_success(request, payment_id):
         'amount_display': payment.amount / 100,
         'base_display': (receipt.base_amount / 100) if receipt else 0,
         'gst_display': (receipt.gst_amount / 100) if receipt else 0,
+        'is_parent': is_parent,
+        'is_student': is_student,
     })
 
 

@@ -128,15 +128,20 @@ class Command(BaseCommand):
         }
 
         # Helper to create guardian
-        def make_guardian(username, first_name, phone, lang='en'):
-            u, _ = User.objects.get_or_create(username=username, defaults={'first_name': first_name})
+        def make_guardian(username, first_name, phone, email, lang='en'):
+            u, _ = User.objects.get_or_create(username=username, defaults={'first_name': first_name, 'email': email})
+            u.email = email
+            u.first_name = first_name
             u.set_password('parent123')
             u.save()
             g, _ = Guardian.objects.get_or_create(
                 user=u,
-                phone=phone,
-                defaults={'language': lang, 'consent_given': True, 'consent_version': 'DPDP-2023-V1'}
+                defaults={'phone': phone, 'email': email, 'language': lang, 'consent_given': True, 'consent_version': 'DPDP-2023-V1'}
             )
+            g.email = email
+            g.phone = phone
+            g.language = lang
+            g.save()
             return g
 
         # Helper to create student login
@@ -203,7 +208,7 @@ class Command(BaseCommand):
             # ----------------- Centre 1: Gopalpura Bypass (GPL - JEE Morning) : 12 students -----------------
             {
                 'id': 'STU-0412', 'name': 'Aarav Meena', 'centre': 'GPL', 'plan': plan_jee, 'lang': 'hi',
-                'parent_name': 'Rajesh Meena', 'phone': '9829012345', 'enrolled': date(2026, 4, 1),
+                'parent_name': 'Humesh Meena', 'phone': '9829012345', 'email': 'humeshmeena@coachfee.com', 'enrolled': date(2026, 4, 1),
                 'status': 'fully_paid_up_to_3', 'att_pct': 0.95, 'trend': 'improving',
             },
             {
@@ -462,12 +467,16 @@ class Command(BaseCommand):
         today = date(2026, 11, 4)
 
         for s_data in students_spec:
-            # 1. Create Guardian
+            # 1. Create Guardian with distinct dummy email & credentials
+            clean_email_name = s_data['parent_name'].lower().replace(' ', '').replace('.', '').replace('-', '').replace('dr', '')
+            email = s_data.get('email') or f"{clean_email_name}@coachfee.com"
+
             username = f"parent_{s_data['id'].lower().replace('-', '_')}"
             guardian = make_guardian(
                 username=username,
                 first_name=s_data['parent_name'],
                 phone=s_data['phone'],
+                email=email,
                 lang=s_data['lang']
             )
 
@@ -570,5 +579,5 @@ class Command(BaseCommand):
         self.stdout.write(f"- Malviya Nagar (MLV): 13 students (including STU-0219 Mohit Gurjar - Due in 11 days)")
         self.stdout.write(f"- Raja Park (RJP): 13 students (including STU-0891 Rohit Choudhary - High Dropout Risk flag)")
         self.stdout.write(f"- Staff logins: 'staff' (Admin: all centres), 'exec_gpl' (Scoped to Gopalpura) / pass: staff123")
-        self.stdout.write(f"- Parent logins: Phone number OTP (Alert dialog popup)")
+        self.stdout.write(f"- Parent logins: Email OTP (Alert dialog popup) e.g. humeshmeena@coachfee.com, rameshsharma@coachfee.com")
         self.stdout.write(f"- Student logins: stu_<student_id> (e.g. stu_stu_0412) / pass: student123")

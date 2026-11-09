@@ -1,8 +1,8 @@
 # Technical Design Document (TDD)
 ## Project: CoachFee — Coaching Institute Fee Management & Dues Collection Portal
 
-- **Repository:** `[GITHUB_REPOSITORY_URL_PLACEHOLDER]` *(To be linked upon repo publishing)*
-- **Live Deployment:** `[RENDER_DEPLOYMENT_URL_PLACEHOLDER]` *(Auto-deployed via Render blueprint)*
+- **Repository:** `https://github.com/arvinkhan/coachFee`
+- **Live Deployment:** `https://coachfee-ukbr.onrender.com`
 - **Client:** Company A, Jaipur (4 Centres, 2,600 Students, 140 Staff, ₹31.2 Cr Billed Annually)
 - **Author:** Software Engineering Team
 
@@ -199,7 +199,7 @@ The automated test suite (`python manage.py test`) covers 28 exhaustive test cas
 - **50-Student Database Scale:** Complete procedural seed generating 50 students across all 4 Jaipur centres with realistic fee plans, multi-year instalments, payments, attendance history, and test records.
 - **Payment Link per Instalment & Test-Mode Gateway:** Unique shareable URL per instalment, copyable clipboard pill, and interactive simulator (UPI/QR, Cards, NetBanking).
 - **Bulk CSV Upload of Attendance & Test Scores:** Batch-level CSV upload with automatic pre-filled sample templates and error reporting.
-- **Parent Portal OTP via Browser Alert:** Demonstrates seamless OTP authentication with automatic browser `alert(...)` popups.
+- **Parent Portal Email OTP via Browser Alert:** Demonstrates seamless OTP authentication via parent dummy emails (<first><last>@coachfee.com) with automatic browser alert(...) popups.
 - **Student Dedicated Portal:** Role-based access for students (`stu_<id>` / `student123`) to view attendance, marks, and fee schedules.
 
 ### Features Purposely Deferred

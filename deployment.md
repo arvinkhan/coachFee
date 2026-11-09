@@ -5,8 +5,8 @@
 CoachFee is an enterprise-grade fee management and dues collection portal built for coaching institutes (Company A, Jaipur: 4 centres, 2,600 students, ₹31.2 Cr billed annually).
 
 - **Technology Stack:** Django 5, HTMX, Tailwind CSS, SQLite (local) / PostgreSQL (production), Gunicorn + WhiteNoise.
-- **Repository URL:** `[GITHUB_REPOSITORY_URL_PLACEHOLDER]` *(To be linked upon repo publishing)*
-- **Live Deployment URL:** `[RENDER_DEPLOYMENT_URL_PLACEHOLDER]` *(Auto-deployed via Render blueprint)*
+- **Repository URL:** `https://github.com/arvinkhan/coachFee`
+- **Live Deployment URL:** `https://coachfee-ukbr.onrender.com`
 
 ---
 
@@ -20,8 +20,8 @@ CoachFee is an enterprise-grade fee management and dues collection portal built 
 
 1. **Clone the repository:**
    ```bash
-   git clone [GITHUB_REPOSITORY_URL_PLACEHOLDER]
-   cd assn
+   git clone https://github.com/arvinkhan/coachFee.git
+   cd coachFee
    ```
 
 2. **Create and activate a virtual environment:**
@@ -87,10 +87,13 @@ CoachFee is an enterprise-grade fee management and dues collection portal built 
 
 ### C. Parent Portal OTP Login (5-Second View)
 - **URL:** `http://127.0.0.1:8000/auth/parent-login/`
-- **Sample Parent 1 (Aarav Meena):** `9829012345` (Hindi default)
-- **Sample Parent 2 (Ishita Sharma):** `9829023456` (English default)
-- **Sample Parent 3 (Mohit Gurjar):** `9829034567` (NEET batch)
-- **OTP Delivery:** In Demo Mode, the 6-digit OTP code is delivered automatically via an interactive browser `alert(...)` dialog popup upon entering the phone number (e.g. `[CoachFee OTP Alert] Your verification code is: 123456`). Simply enter the code and submit.
+- **Login Mechanism:** Passwordless email OTP. Every student has a unique parent with their own distinct email (`<first><last>@coachfee.com`) and credentials:
+  - **Sample Parent 1 (Aarav Meena):** `humeshmeena@coachfee.com` (Father: Humesh Meena, Hindi default)
+  - **Sample Parent 2 (Ishita Sharma):** `rameshsharma@coachfee.com` (Father: Dr. Ramesh Sharma, English default)
+  - **Sample Parent 3 (Mohit Gurjar):** `surendragurjar@coachfee.com` (Father: Surendra Gurjar, NEET batch)
+  - **Sample Parent 4 (Rohit Choudhary):** `vikramchoudhary@coachfee.com` (Father: Vikram Choudhary, High-risk NEET)
+  - *All 50 Students:* Each of the 50 students has a completely distinct parent with a unique email formatted as `<father_name>@coachfee.com`.
+- **OTP Delivery via Alert Dialog:** In Demo Mode, the 6-digit OTP code pops up automatically in an interactive browser `alert(...)` dialog (e.g. `[CoachFee Email OTP Verification] Your verification code for humeshmeena@coachfee.com is: 123456`). Simply enter the 6 digits and submit.
 - **Language Switch:** Click the language button at the top right to instantly toggle between English and Hindi.
 - **Payment Link per Instalment:** Each unpaid instalment features a test-mode payment link with copyable link pill and gateway simulation controls.
 

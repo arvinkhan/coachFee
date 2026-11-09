@@ -27,16 +27,16 @@ def parent_login(request):
         return redirect('ledger:dashboard')
 
     step = 'request'
-    phone = ''
+    email = ''
     demo_otp = None
     error = None
 
     if request.method == 'POST':
         action = request.POST.get('action')
-        phone = request.POST.get('phone', '').strip()
+        email = (request.POST.get('email') or request.POST.get('phone') or '').strip().lower()
 
         if action == 'request_otp':
-            success, msg, code = request_parent_otp(phone)
+            success, msg, code = request_parent_otp(email)
             if success:
                 step = 'verify'
                 demo_otp = code
@@ -44,7 +44,7 @@ def parent_login(request):
                 error = msg
         elif action == 'verify_otp':
             otp = request.POST.get('otp', '').strip()
-            success, msg, user = verify_parent_otp(phone, otp)
+            success, msg, user = verify_parent_otp(email, otp)
             if success and user:
                 login(request, user)
                 return redirect('ledger:parent_dashboard')
@@ -54,7 +54,7 @@ def parent_login(request):
 
     return render(request, 'accounts/parent_login.html', {
         'step': step,
-        'phone': phone,
+        'email': email,
         'demo_otp': demo_otp,
         'error': error,
     })

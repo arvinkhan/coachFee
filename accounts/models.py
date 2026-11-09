@@ -18,6 +18,7 @@ class Guardian(models.Model):
         on_delete=models.CASCADE,
         related_name='guardian_profile',
     )
+    email = models.EmailField(max_length=254, null=True, blank=True, db_index=True)
     phone = models.CharField(max_length=15, unique=True, db_index=True)
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='en')
     consent_given = models.BooleanField(default=False)
@@ -94,7 +95,7 @@ class StudentProfile(models.Model):
 class OTPLog(models.Model):
     """Tracks OTP generation and verification for rate-limiting and audit."""
 
-    phone = models.CharField(max_length=15, db_index=True)
+    phone = models.CharField(max_length=150, db_index=True)
     otp = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()

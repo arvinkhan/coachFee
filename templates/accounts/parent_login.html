@@ -6,10 +6,10 @@
     <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
         <div class="text-center mb-6">
             <div class="w-12 h-12 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center text-xl mx-auto mb-3">
-                📱
+                📧
             </div>
             <h1 class="text-xl font-bold text-slate-900">Parent OTP Sign In</h1>
-            <p class="text-xs text-slate-500 mt-1">अभिभावक लॉगिन — दर्ज मोबाइल नंबर पर OTP प्राप्त करें</p>
+            <p class="text-xs text-slate-500 mt-1">अभिभावक लॉगिन — अपने ईमेल पर OTP प्राप्त करें</p>
         </div>
 
         {% if error %}
@@ -22,7 +22,7 @@
         <script>
             window.addEventListener('DOMContentLoaded', function() {
                 setTimeout(function() {
-                    alert("📲 CoachFee OTP Verification\n\nYour 6-digit login code for +91 {{ phone }} is:\n\n👉  {{ demo_otp }}  👈\n\n(Valid for 5 minutes)");
+                    alert("📧 CoachFee Email OTP Verification\n\nYour 6-digit login verification code for {{ email }} is:\n\n👉  {{ demo_otp }}  👈\n\n(Valid for 5 minutes)");
                 }, 150);
             });
         </script>
@@ -33,14 +33,14 @@
         <form method="POST" action="{% url 'accounts:parent_login' %}" class="space-y-4">
             {% csrf_token %}
             <input type="hidden" name="action" value="verify_otp">
-            <input type="hidden" name="phone" value="{{ phone }}">
+            <input type="hidden" name="email" value="{{ email }}">
 
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Enter 6-Digit OTP</label>
                 <input type="text" name="otp" autofocus maxlength="6" pattern="\d{6}" required
                        placeholder="••••••"
                        class="w-full text-center tracking-widest text-xl font-mono px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                <p class="text-[11px] text-slate-400 mt-1 text-center">OTP sent to +91 {{ phone }}</p>
+                <p class="text-[11px] text-slate-400 mt-1 text-center">OTP dispatched to <strong>{{ email }}</strong></p>
             </div>
 
             <button type="submit" class="w-full py-2.5 px-4 bg-brand-700 hover:bg-brand-800 text-white font-semibold text-sm rounded-lg shadow-sm transition">
@@ -49,7 +49,7 @@
 
             <div class="text-center pt-2">
                 <a href="{% url 'accounts:parent_login' %}" class="text-xs text-slate-500 hover:text-slate-800 underline">
-                    Change phone number
+                    Change email address
                 </a>
             </div>
         </form>
@@ -60,16 +60,15 @@
             <input type="hidden" name="action" value="request_otp">
 
             <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Mobile Number (मोबाइल नंबर)</label>
-                <div class="flex">
-                    <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 text-slate-500 text-sm">
-                        +91
-                    </span>
-                    <input type="tel" name="phone" value="{{ phone }}" placeholder="9829012345" required autofocus
-                           pattern="[0-9]{10}" maxlength="10"
-                           class="w-full px-4 py-2.5 border border-slate-300 rounded-r-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm">
-                </div>
-                <p class="text-[11px] text-slate-400 mt-1">Sample parent numbers: 9829012345 (Aarav), 9829023456 (Ishita)</p>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Parent Email ID (अभिभावक का ईमेल)</label>
+                <input type="email" name="email" value="{{ email }}" placeholder="e.g. humeshmeena@coachfee.com" required autofocus
+                       class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm">
+                <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                    <strong>Demo sample emails:</strong><br>
+                    • Aarav Meena's parent: <code class="text-brand-700 font-mono">humeshmeena@coachfee.com</code><br>
+                    • Ishita Sharma's parent: <code class="text-brand-700 font-mono">rameshsharma@coachfee.com</code><br>
+                    • Mohit Gurjar's parent: <code class="text-brand-700 font-mono">surendragurjar@coachfee.com</code>
+                </p>
             </div>
 
             <!-- DPDP Parental Consent Checkbox Notice -->
@@ -78,7 +77,7 @@
             </div>
 
             <button type="submit" class="w-full py-2.5 px-4 bg-brand-700 hover:bg-brand-800 text-white font-semibold text-sm rounded-lg shadow-sm transition">
-                Get Verification Code (OTP भेजें)
+                Get Verification Code (OTP प्राप्त करें)
             </button>
 
             <div class="text-center pt-2">
